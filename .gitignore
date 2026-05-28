@@ -20,6 +20,6 @@ Thumbs.db
 # Local builds / caches
 node_modules/
 .cache/
-
+AGENT.md
 # Don't ignore the screenshots placeholder
 !docs/screenshots/.gitkeep

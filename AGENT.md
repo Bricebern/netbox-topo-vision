@@ -121,8 +121,6 @@ Peuplement : `scripts/populate/populate_netbox.py`
 ---
 
 ## GIT
-**⚠️ STATUT ACTUEL : repo GitHub vide — aucun fichier poussé pour le moment.**
-Le développement se fait en local. Ne pas tenter de `git pull` ou de référencer du code remote.
 
 ```bash
 git checkout -b feat/nom-fonctionnalite
