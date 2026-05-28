@@ -1,0 +1,34 @@
+# NetBox Topo Vision — production stack
+#
+# Usage:
+#   cp .env.example .env
+#   # edit .env with your NetBox URL + Token
+#   docker compose up -d
+#   open http://localhost:${APP_PORT:-8090}
+services:
+  topo-vision:
+    image: nginx:alpine
+    container_name: topo-vision
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8090}:80"
+    volumes:
+      - ./index.html:/usr/share/nginx/html/index.html:ro
+      - ./favicon.ico:/usr/share/nginx/html/favicon.ico:ro
+      # The official nginx:alpine image runs envsubst on every file in
+      # /etc/nginx/templates/*.template at startup, writing the result to
+      # /etc/nginx/conf.d/. This lets us inject NETBOX_URL / NETBOX_TOKEN
+      # into the reverse-proxy config without rebuilding the image.
+      - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:ro
+    environment:
+      # Only these variables are expanded by envsubst in the template.
+      NGINX_ENVSUBST_TEMPLATE_SUFFIX: ".template"
+      NGINX_ENVSUBST_FILTER: "^(NETBOX_URL|NETBOX_TOKEN)$$"
+      NETBOX_URL: "${NETBOX_URL}"
+      NETBOX_TOKEN: "${NETBOX_TOKEN}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

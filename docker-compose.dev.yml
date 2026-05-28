@@ -1,0 +1,12 @@
+# Development overlay — mounts the whole directory so editing index.html
+# is reflected on refresh (no rebuild needed).
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+services:
+  topo-vision:
+    volumes:
+      - .:/usr/share/nginx/html:ro
+      - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "${APP_PORT:-8090}:80"

@@ -1,0 +1,25 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local builds / caches
+node_modules/
+.cache/
+
+# Don't ignore the screenshots placeholder
+!docs/screenshots/.gitkeep
