@@ -15,11 +15,14 @@ services:
     volumes:
       - ./index.html:/usr/share/nginx/html/index.html:ro
       - ./favicon.ico:/usr/share/nginx/html/favicon.ico:ro
+      - ./css:/usr/share/nginx/html/css:ro
+      - ./js:/usr/share/nginx/html/js:ro
       # The official nginx:alpine image runs envsubst on every file in
       # /etc/nginx/templates/*.template at startup, writing the result to
       # /etc/nginx/conf.d/. This lets us inject NETBOX_URL / NETBOX_TOKEN
       # into the reverse-proxy config without rebuilding the image.
       - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:ro
+      - ./default-topo.json:/usr/share/nginx/html/default-topo.json:ro
     environment:
       # Only these variables are expanded by envsubst in the template.
       NGINX_ENVSUBST_TEMPLATE_SUFFIX: ".template"

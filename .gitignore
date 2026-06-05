@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+default-topo.json
 
 # OS
 .DS_Store
@@ -21,5 +22,7 @@ Thumbs.db
 node_modules/
 .cache/
 AGENT.md
+prompt-topo-v2.txt
+writer.py
 # Don't ignore the screenshots placeholder
 !docs/screenshots/.gitkeep
