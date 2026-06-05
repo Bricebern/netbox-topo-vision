@@ -549,17 +549,20 @@ function drawVirtualSubgroups(parentG, splitData, positions, zoneColor, elFn, la
     const maxY = Math.max(...nodePos.map(p=>p.y+NODE_H));
     const bx = minX - BUBBLE_PAD_X, by = minY - BUBBLE_PAD_Y;
     const bw = maxX - minX + BUBBLE_PAD_X*2, bh = maxY - minY + BUBBLE_PAD_Y*2;
+    const _light   = document.documentElement.dataset.theme === 'light';
+    const _bStroke = _light ? 'rgba(15,23,42,0.45)'   : 'rgba(216,227,245,0.22)';
+    const _bLabel  = _light ? 'rgba(15,23,42,0.65)'   : 'rgba(216,227,245,0.55)';
     if (bubble) {
       parentG.appendChild(elFn('rect', {
         x:bx, y:by, width:bw, height:bh, rx:Math.min(bh/2,30),
-        fill:'none', stroke:'rgba(216,227,245,0.22)', 'stroke-width':'1.2', 'stroke-dasharray':'3,3'
+        fill:'none', stroke:_bStroke, 'stroke-width':'1.2', 'stroke-dasharray':'3,3'
       }));
     }
     if (label) {
       const lbl = elFn('text', {
         x: bx+bw/2, y: by+bh+BUBBLE_LABEL_H/2,
         'text-anchor':'middle', 'dominant-baseline':'central',
-        fill:'rgba(216,227,245,0.55)', 'font-family':"'DM Sans',sans-serif",
+        fill:_bLabel, 'font-family':"'DM Sans',sans-serif",
         'font-size':'10.5', 'font-weight':'600'
       });
       lbl.textContent = label;

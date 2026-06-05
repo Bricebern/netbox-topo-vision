@@ -574,6 +574,7 @@ function toggleTheme() {
   CONFIG.theme = (CONFIG.theme === 'light') ? 'dark' : 'light';
   applyTheme(CONFIG.theme);
   saveConfig();
+  if (currentTopoData) render(currentTopoData);
 }
 
 // ══════════════════════════════════════════
