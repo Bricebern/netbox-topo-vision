@@ -1,14 +1,14 @@
 # NetBox Topo Vision
 
-[![Stars](https://img.shields.io/github/stars/Brice97426/netbox-topo-vision?style=flat-square&logo=github)](https://github.com/Brice97426/netbox-topo-vision/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
-[![NetBox](https://img.shields.io/badge/NetBox-3.x%20%7C%204.x-9068f8?style=flat-square&logo=data:image/svg+xml;base64,...)](https://netbox.dev)
+[![Stars](https://img.shields.io/github/stars/Bricebern/netbox-topo-vision?style=flat-square&logo=github)](https://github.com/Bricebern/netbox-topo-vision/stargazers)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](https://github.com/Bricebern/netbox-topo-vision/blob/main/LICENSE)
+[![NetBox](https://img.shields.io/badge/NetBox-3.x%20%7C%204.x-9068f8?style=flat-square)](https://netbox.dev)
 [![Docker Hub](https://img.shields.io/docker/pulls/briceber/netbox-topo-vision?style=flat-square&logo=docker&label=Docker%20Hub)](https://hub.docker.com/r/briceber/netbox-topo-vision)
 
 > **A standalone, zero-dependency network topology viewer for NetBox — served by a single NGINX container.**
 
 ![Topology overview](docs/screenshots/topology-overview.png)
-_↑ Interactive SVG topology — dark theme, zone layout, minimap_
+*↑ Interactive SVG topology — dark theme, zone layout, minimap*
 
 ---
 
@@ -37,20 +37,26 @@ _↑ Interactive SVG topology — dark theme, zone layout, minimap_
 
 ### Prerequisites
 
-| Requirement | Version |
-|---|---|
-| NetBox | 3.x or 4.x |
-| Docker & Docker Compose | 20.x+ |
-| NetBox API Token | Read-only is sufficient |
+| Requirement             | Version                 |
+| ----------------------- | ----------------------- |
+| NetBox                  | 3.x or 4.x              |
+| Docker & Docker Compose | 20.x+                   |
+| NetBox API Token        | Read-only is sufficient |
 
-### 1. Clone the repository
+---
+
+### Option A — Docker Compose (recommended)
+
+The easiest and most reliable way to run netbox-topo-vision.
+
+**1. Clone the repository**
 
 ```bash
-git clone https://github.com/Brice97426/netbox-topo-vision.git
+git clone https://github.com/Bricebern/netbox-topo-vision.git
 cd netbox-topo-vision
 ```
 
-### 2. Configure environment
+**2. Configure environment**
 
 ```bash
 cp .env.example .env
@@ -59,12 +65,13 @@ cp .env.example .env
 Edit `.env` with your NetBox details:
 
 ```env
+# Use your machine's LAN IP — not localhost (see note below)
 NETBOX_URL=http://192.168.1.100:8000
 NETBOX_TOKEN=your_token_here
 APP_PORT=8090
 ```
 
-### 3. Create the default topology file (required on first run)
+**3. Create the default topology file (required on first run)**
 
 ```bash
 echo '{}' > default-topo.json
@@ -72,59 +79,64 @@ echo '{}' > default-topo.json
 
 > This file can later be replaced with a custom zone layout exported from the Zone Editor.
 
-### 4. Start the container
+**4. Start the container**
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
-### 5. Open your browser
+**5. Open your browser**
 
 ```
 http://localhost:8090
 ```
 
-On first launch, the **Settings modal** opens automatically — your NetBox URL and token are already injected server-side via the NGINX proxy. Click **Load** (or press `R`) to fetch your topology.
+On first launch, click **Load** (or press `R`) to fetch your topology.
+
+---
+
+### Option B — Docker Hub (single command)
+
+Pull the pre-built image directly from Docker Hub — no clone required.
+
+```bash
+# 1. Find your machine's LAN IP
+hostname -I | awk '{print $1}'
+# Example output: 192.168.1.42
+
+# 2. Run the container
+docker run -d \
+  -p 8090:80 \
+  --add-host=host.docker.internal:host-gateway \
+  -e NETBOX_URL=http://192.168.1.42:8000 \
+  -e NETBOX_TOKEN=your_token_here \
+  briceber/netbox-topo-vision
+```
+
+> ⚠️ **Why not `localhost`?**
+> Inside a Docker container, `localhost` refers to the container itself — not your host machine.
+> Always use your machine's LAN IP (e.g. `192.168.1.42`) or `host.docker.internal` with `--add-host=host.docker.internal:host-gateway`.
+
+Open `http://localhost:8090` in your browser, then click **Load**.
 
 ---
 
 ## ⚙️ Configuration
 
-All user preferences are stored in **browser localStorage** — no source-code edits needed.  
+All user preferences are stored in **browser localStorage** — no source-code edits needed.
 Server-side variables (`NETBOX_URL`, `NETBOX_TOKEN`, `APP_PORT`) are set in `.env`.
 
-| Variable | Default | Description |
-|---|---|---|
-| `NETBOX_URL` | `http://localhost:8000` | Base URL of your NetBox instance (no trailing slash) |
-| `NETBOX_TOKEN` | _(empty)_ | NetBox API token — never sent to the browser |
-| `APP_PORT` | `8090` | Host port exposed by NGINX |
-
-### docker-compose.yml (production)
-
-```yaml
-services:
-  topo-vision:
-    image: nginx:alpine
-    container_name: topo-vision
-    restart: unless-stopped
-    ports:
-      - "${APP_PORT:-8090}:80"
-    volumes:
-      - ./index.html:/usr/share/nginx/html/index.html:ro
-      - ./favicon.ico:/usr/share/nginx/html/favicon.ico:ro
-      - ./css:/usr/share/nginx/html/css:ro
-      - ./js:/usr/share/nginx/html/js:ro
-      - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:ro
-      - ./default-topo.json:/usr/share/nginx/html/default-topo.json:ro
-    environment:
-      NETBOX_URL: "${NETBOX_URL}"
-      NETBOX_TOKEN: "${NETBOX_TOKEN}"
-```
+| Variable        | Default                 | Description                                          |
+| --------------- | ----------------------- | ---------------------------------------------------- |
+| `NETBOX_URL`    | `http://localhost:8000` | Base URL of your NetBox instance (no trailing slash). **Use your LAN IP, not localhost.** |
+| `NETBOX_TOKEN`  | *(empty)*               | NetBox API token — never sent to the browser         |
+| `APP_PORT`      | `8090`                  | Host port exposed by NGINX                           |
+| `EDIT_PASSWORD` | *(empty)*               | Password to protect "Save as server default" (leave empty to disable) |
 
 ### Development (hot reload)
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
 Changes to `index.html`, `css/`, and `js/` are reflected immediately — no rebuild needed.
@@ -142,31 +154,33 @@ If you put this container behind an external reverse proxy (Traefik, Caddy…), 
 Zones are configured directly in the **Zone Editor** (click ▣ in the topbar).
 
 Each zone has:
+
 - A **key** (stable internal identifier)
 - A **label** (displayed in the legend)
 - A **color** (zone background, node accent bar, legend dot)
 - A list of **slugs** — matched against NetBox role slugs (case-insensitive substring)
 
 Advanced options:
+
 - **Grid layout** — arrange devices in a fixed-column grid within the zone
 - **Virtual groups** — group devices into labelled bubbles by name prefix (`sw`, `esx`, `vrtx`, `custom` families)
 
-Export/import zones as JSON to share configurations between instances.  
+Export/import zones as JSON to share configurations between instances.
 See [docs/configuration.md](docs/configuration.md) for the complete reference.
 
 ---
 
 ## ⌨️ Keyboard Shortcuts
 
-| Key | Action |
-|-----|--------|
-| `R` | Refresh topology |
-| `L` | Toggle cable labels |
-| `Z` | Toggle zone backgrounds |
-| `G` | Toggle cable grouping |
-| `+` / `−` | Zoom in / out |
-| `Esc` | Close sidebar or modal |
-| `?` | Show shortcuts overlay |
+| Key       | Action                  |
+| --------- | ----------------------- |
+| `R`       | Refresh topology        |
+| `L`       | Toggle cable labels     |
+| `Z`       | Toggle zone backgrounds |
+| `G`       | Toggle cable grouping   |
+| `+` / `−` | Zoom in / out           |
+| `Esc`     | Close sidebar or modal  |
+| `?`       | Show shortcuts overlay  |
 
 ---
 
@@ -196,5 +210,5 @@ git push origin feat/my-feature
 
 ## 📄 License
 
-MIT © [Brice97426](https://github.com/Brice97426)  
+MIT © [Bricebern](https://github.com/Bricebern)
 See [LICENSE](LICENSE) for details.
