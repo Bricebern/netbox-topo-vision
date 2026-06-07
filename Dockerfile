@@ -10,11 +10,12 @@ FROM nginx:alpine
 LABEL org.opencontainers.image.title="netbox-topo-vision" \
       org.opencontainers.image.description="Network topology visualization tool for NetBox" \
       org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.source="https://github.com/Brice97426/netbox-topo-vision"
+      org.opencontainers.image.source="https://github.com/Bricebern/netbox-topo-vision"
 
 # Static assets served by NGINX
 COPY index.html favicon.ico /usr/share/nginx/html/
-
+COPY css/ /usr/share/nginx/html/css/
+COPY js/ /usr/share/nginx/html/js/
 # NGINX template (envsubst will produce /etc/nginx/conf.d/default.conf at start)
 COPY nginx/default.conf /etc/nginx/templates/default.conf.template
 
