@@ -3,7 +3,7 @@
 [![Stars](https://img.shields.io/github/stars/Brice97426/netbox-topo-vision?style=flat-square&logo=github)](https://github.com/Brice97426/netbox-topo-vision/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
 [![NetBox](https://img.shields.io/badge/NetBox-3.x%20%7C%204.x-9068f8?style=flat-square&logo=data:image/svg+xml;base64,...)](https://netbox.dev)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ed?style=flat-square&logo=docker)](docker-compose.yml)
+[![Docker Hub](https://img.shields.io/docker/pulls/briceber/netbox-topo-vision?style=flat-square&logo=docker&label=Docker%20Hub)](https://hub.docker.com/r/briceber/netbox-topo-vision)
 
 > **A standalone, zero-dependency network topology viewer for NetBox — served by a single NGINX container.**
 
