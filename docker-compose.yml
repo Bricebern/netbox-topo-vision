@@ -7,7 +7,7 @@
 #   open http://localhost:${APP_PORT:-8090}
 services:
   topo-vision:
-    image: nginx:alpine
+    image: briceber/netbox-topo-vision:latest
     container_name: topo-vision
     restart: unless-stopped
     ports:
