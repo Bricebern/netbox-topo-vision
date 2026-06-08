@@ -2,33 +2,48 @@
 #
 # Usage:
 #   cp .env.example .env
-#   # edit .env with your NetBox URL + Token
+#   # Edit .env — set NETBOX_URL to your LAN IP, NOT localhost
+#   # Example: NETBOX_URL=http://192.168.1.100:8000
+#   echo '{}' > default-topo.json
 #   docker compose up -d
 #   open http://localhost:${APP_PORT:-8090}
+#
+# ⚠️  NETBOX_URL must be your machine's LAN IP (e.g. http://192.168.1.100:8000)
+#     Using http://localhost:8000 will cause a 502 error — inside Docker,
+#     localhost refers to the container itself, not your host machine.
+#
+# 🔒 Corporate proxy (optional):
+#     If your Docker host sits behind a corporate HTTP proxy, set
+#     HTTP_PROXY / HTTPS_PROXY / NO_PROXY in your .env file so the
+#     NGINX container can reach your NetBox instance.
+#     Leave these variables empty (or unset) if no proxy is needed.
+
 services:
   topo-vision:
+    # Pre-built image from Docker Hub (recommended for production)
+    # To build locally instead, comment the line below and uncomment "build: ."
     image: briceber/netbox-topo-vision:latest
+    # build: .
     container_name: topo-vision
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8090}:80"
+    # Allow the container to reach services running on the host machine
+    # (required if NETBOX_URL points to the host via host.docker.internal)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - ./index.html:/usr/share/nginx/html/index.html:ro
-      - ./favicon.ico:/usr/share/nginx/html/favicon.ico:ro
-      - ./css:/usr/share/nginx/html/css:ro
-      - ./js:/usr/share/nginx/html/js:ro
-      # The official nginx:alpine image runs envsubst on every file in
-      # /etc/nginx/templates/*.template at startup, writing the result to
-      # /etc/nginx/conf.d/. This lets us inject NETBOX_URL / NETBOX_TOKEN
-      # into the reverse-proxy config without rebuilding the image.
-      - ./nginx/default.conf:/etc/nginx/templates/default.conf.template:ro
       - ./default-topo.json:/usr/share/nginx/html/default-topo.json:ro
     environment:
-      # Only these variables are expanded by envsubst in the template.
+      # Only these variables are expanded by envsubst in the nginx template.
       NGINX_ENVSUBST_TEMPLATE_SUFFIX: ".template"
       NGINX_ENVSUBST_FILTER: "^(NETBOX_URL|NETBOX_TOKEN)$$"
       NETBOX_URL: "${NETBOX_URL}"
       NETBOX_TOKEN: "${NETBOX_TOKEN}"
+      # Corporate proxy — optional, leave empty if not needed
+      HTTP_PROXY: "${HTTP_PROXY:-}"
+      HTTPS_PROXY: "${HTTPS_PROXY:-}"
+      NO_PROXY: "${NO_PROXY:-}"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz || exit 1"]
       interval: 30s

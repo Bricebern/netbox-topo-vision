@@ -47,9 +47,7 @@
 
 ### Option A — Docker Compose (recommended)
 
-**Best for:** teams sharing the same topology layout, production deployments, or anyone who wants a custom default zone configuration committed alongside their stack.
-
-> Requires cloning the repository. The `default-topo.json` file is **mandatory** here — Docker Compose mounts it as a volume, and if it doesn't exist on disk Docker will create a directory instead, breaking NGINX at startup.
+The easiest and most reliable way to run netbox-topo-vision.
 
 **1. Clone the repository**
 
@@ -99,8 +97,6 @@ On first launch, click **Load** (or press `R`) to fetch your topology.
 
 ### Option B — Docker Hub (single command)
 
-**Best for:** quick evaluation, personal homelab, or trying out the tool without cloning the repository. No `default-topo.json` required — the container falls back to the built-in default zone layout automatically.
-
 Pull the pre-built image directly from Docker Hub — no clone required.
 
 ```bash
@@ -123,26 +119,6 @@ docker run -d \
 
 Open `http://localhost:8090` in your browser, then click **Load**.
 
-#### Customizing the default zone layout (Option B)
-
-By default, Option B uses the built-in zone layout. To use your own:
-
-**1.** Open the app, configure your zones in the **Zone Editor** (▣ button in the topbar), then click **Export JSON** and save the file as `default-topo.json`.
-
-**2.** Restart the container with a volume mount:
-
-```bash
-docker run -d \
-  -p 8090:80 \
-  --add-host=host.docker.internal:host-gateway \
-  -e NETBOX_URL=http://192.168.1.42:8000 \
-  -e NETBOX_TOKEN=your_token_here \
-  -v /path/to/default-topo.json:/usr/share/nginx/html/default-topo.json:ro \
-  briceber/netbox-topo-vision
-```
-
-> Unlike Option A, this file is **optional** — omitting `-v` simply uses the built-in defaults.
-
 ---
 
 ## ⚙️ Configuration
@@ -155,6 +131,26 @@ Server-side variables (`NETBOX_URL`, `NETBOX_TOKEN`, `APP_PORT`) are set in `.en
 | `NETBOX_URL`    | `http://localhost:8000` | Base URL of your NetBox instance (no trailing slash). **Use your LAN IP, not localhost.** |
 | `NETBOX_TOKEN`  | *(empty)*               | NetBox API token — never sent to the browser         |
 | `APP_PORT`      | `8090`                  | Host port exposed by NGINX                           |
+| `HTTP_PROXY`    | *(empty)*               | *(optional)* Corporate HTTP proxy for the container  |
+| `HTTPS_PROXY`   | *(empty)*               | *(optional)* Corporate HTTPS proxy for the container |
+| `NO_PROXY`      | `localhost,127.0.0.1`   | *(optional)* Comma-separated list of hosts that bypass the proxy |
+
+### Corporate proxy (optional)
+
+> This section only applies if your Docker host sits behind a **corporate HTTP proxy**.
+
+In **proxy mode** (the default), it is the NGINX container — not your browser — that calls the NetBox API. If the container cannot reach `NETBOX_URL` directly, you need to pass the proxy settings via `.env`:
+
+```env
+HTTP_PROXY=http://proxy.company.com:3128
+HTTPS_PROXY=http://proxy.company.com:3128
+# Bypass the proxy for local/internal addresses
+NO_PROXY=localhost,127.0.0.1,192.168.0.0/16,netbox.internal
+```
+
+Leave these variables **empty or unset** if no proxy is needed — they have no effect otherwise.
+
+> **Tip:** if you cannot configure the proxy, switch to **Direct mode** in Settings ⚙ → Connection. In direct mode the browser calls NetBox directly using its own network stack, which already respects the system proxy.
 
 ### Development (hot reload)
 
