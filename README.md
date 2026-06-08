@@ -74,10 +74,12 @@ APP_PORT=8090
 **3. Create the default topology file (required on first run)**
 
 ```bash
-echo '{}' > default-topo.json
+cp default-topo.example.json default-topo.json
 ```
 
-> This file can later be replaced with a custom zone layout exported from the Zone Editor.
+> `default-topo.example.json` is a minimal zone layout included in the repo (zone *Other* — catch-all fallback).
+> `default-topo.json` is listed in `.gitignore` so your customisations stay local.
+> You can later replace it with a layout exported from the in-browser **Zone Editor**.
 
 **4. Start the container**
 
@@ -164,7 +166,68 @@ Changes to `index.html`, `css/`, and `js/` are reflected immediately — no rebu
 
 The built-in NGINX config already acts as a reverse proxy: all calls to `/api/netbox/*` are forwarded to your NetBox instance with the token injected. No CORS configuration is needed in NetBox.
 
-If you put this container behind an external reverse proxy (Traefik, Caddy…), simply forward HTTP to port 80 of the container.
+#### Serving NetBox + Topo Vision on the same domain (sub-path)
+
+If NetBox and Topo Vision share the same domain (e.g. `netbox.example.fr/` for NetBox and `netbox.example.fr/topologie/` for Topo Vision), use the following NGINX config on the **host** (not inside Docker):
+
+```nginx
+server {
+    listen 80;
+    server_name netbox.example.fr;
+    client_max_body_size 20M;
+
+    # Static files served by Topo Vision
+    location = /default-topo.json {
+        allow <private-network>;
+        allow 127.0.0.1;
+        deny all;
+        proxy_pass http://127.0.0.1:8090/default-topo.json;
+        proxy_set_header Host $host;
+    }
+
+    location = /favicon.ico {
+        proxy_pass http://127.0.0.1:8090/favicon.ico;
+    }
+
+    # NetBox API calls from Topo Vision — rewrite /api/netbox/x → /api/x → NetBox
+    location /api/netbox/ {
+        allow <private-network>;
+        allow 127.0.0.1;
+        deny all;
+        rewrite ^/api/netbox/(.*)$ /api/$1 break;
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Topo Vision web UI
+    location /topologie/ {
+        allow <private-network>;
+        allow 127.0.0.1;
+        deny all;
+        proxy_pass http://127.0.0.1:8090/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /topologie { return 301 /topologie/; }
+
+    # NetBox
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+> The `NETBOX_URL` in `.env` must be set to `http://127.0.0.1:8000` (direct, no proxy loop) since NGINX on the host handles the routing.
 
 ---
 

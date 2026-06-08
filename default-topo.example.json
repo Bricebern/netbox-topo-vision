@@ -1,1 +1,43 @@
-{}
+{
+    "layers": [
+        {
+            "key": "other",
+            "col": "mid",
+            "order": 0,
+            "label": "Other",
+            "color": "#485870",
+            "slugs": []
+        }
+    ],
+    "columns": [
+        {
+            "key": "left",
+            "label": "Left",
+            "pos": 0
+        },
+        {
+            "key": "mid",
+            "label": "Middle",
+            "pos": 1
+        },
+        {
+            "key": "right",
+            "label": "Right",
+            "pos": 2
+        }
+    ],
+    "rows": [
+        {
+            "order": 0,
+            "label": "Row 1"
+        },
+        {
+            "order": 1,
+            "label": "Row 2"
+        },
+        {
+            "order": 2,
+            "label": "Row 3"
+        }
+    ]
+}
