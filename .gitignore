@@ -21,7 +21,7 @@ Thumbs.db
 # Local builds / caches
 node_modules/
 .cache/
-AGENT.md
+CLAUDE.md
 prompt-topo-v2.txt
 writer.py
 # Don't ignore the screenshots placeholder
