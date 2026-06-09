@@ -219,14 +219,23 @@ body { display: flex; flex-direction: column; }
 .export-option-name { font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--text); }
 .export-option-desc { font-size: 9.5px; color: var(--text2); }
 
+/* ══════════════════ TOPBAR RESPONSIVE ══════════════════ */
+@media (max-width: 1280px) {
+  .brand-text { display: none; }
+  .topbar-brand { gap: 0; padding: 0 14px; }
+  .status-text { display: none; }
+  .topbar-stats { display: none; }
+  #btn-load span:not(.topbar-btn-icon) { display: none; }
+  .topbar-btn { padding: 0 10px; }
+}
+
 /* ══════════════════ FILTERBAR ══════════════════ */
 .filterbar {
-  display: flex; align-items: center; gap: 5px;
-  padding: 0 12px; height: 40px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 5px;
+  padding: 7px 12px;
   background: var(--ink2); border-bottom: 1px solid var(--line);
-  flex-shrink: 0; overflow-x: auto; scrollbar-width: none;
+  flex-shrink: 0;
 }
-.filterbar::-webkit-scrollbar { display: none; }
 .filter-label {
   font-family: var(--mono); font-size: 8.5px;
   color: var(--text4); letter-spacing: 0.12em;
@@ -267,7 +276,8 @@ body { display: flex; flex-direction: column; }
 }
 .filter-prefix-input:focus { border-color: var(--blue); }
 .filter-prefix-input.on   { border-color: var(--blue); background: var(--blue-dim); }
-.filter-tags { display: flex; gap: 3px; align-items: center; flex-shrink: 0; }
+.filter-tags { display: flex; gap: 3px; align-items: center; flex-basis: 100%; flex-wrap: wrap; }
+.filter-tags:has(.filter-tag) { padding-top: 4px; border-top: 1px solid var(--line); }
 .filter-tag {
   display: flex; align-items: center; gap: 3px;
   padding: 2px 7px 2px 8px; border-radius: 20px;
