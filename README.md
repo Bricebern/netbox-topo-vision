@@ -277,6 +277,42 @@ See [docs/configuration.md](docs/configuration.md) for the complete reference.
 
 ---
 
+## 🔄 Mise à jour
+
+### Via Docker Compose (Option A)
+
+```bash
+docker compose pull       # récupère la nouvelle image depuis Docker Hub
+docker compose up -d      # redémarre le conteneur avec la nouvelle image
+```
+
+### Via Docker run (Option B)
+
+```bash
+docker pull briceber/netbox-topo-vision:latest
+docker stop topo-vision && docker rm topo-vision
+docker run -d -p 8090:80 \
+  -e NETBOX_URL=http://<ip-netbox>:8000 \
+  -e NETBOX_TOKEN=<token> \
+  --name topo-vision \
+  briceber/netbox-topo-vision:latest
+```
+
+> Le fichier `default-topo.json` et le `.env` ne sont pas inclus dans l'image Docker — aucune configuration n'est perdue lors d'une mise à jour.
+
+### Mettre à jour les sources depuis GitHub
+
+Si vous avez cloné le dépôt et souhaitez récupérer la dernière version du code source :
+
+```bash
+git pull origin main          # récupère les derniers commits
+docker compose up -d --build  # reconstruit l'image avec les nouveaux fichiers
+```
+
+> Vos fichiers `default-topo.json` et `.env` sont dans votre répertoire de travail et ne sont pas touchés par `git pull`.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) first.

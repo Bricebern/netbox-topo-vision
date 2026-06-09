@@ -188,7 +188,13 @@ function getVirtualDims(nodes, layer) {
                   + (hasSwRow && hasEsxRow ? VIRT_ROW_GAP : 0)
                   + (hasEsxRow ? esxLineH : 0);
 
-  return { w: Math.max(swLineW, esxLineW, NODE_W), h: Math.max(totalH, NODE_H) };
+  // vrtxNodes (équipements sans famille) sont placés après les groupes esx/vrtx/generic
+  // sur la même ligne Y — leur largeur doit être incluse dans le w retourné
+  const vrtxNodesW = vrtxNodes.length > 0
+    ? (hasEsxRow ? BUBBLE_GAP : 0) + Math.max(vrtxNodes.reduce((s,d) => s + _step(d), 0) - COL_GAP, 0)
+    : 0;
+
+  return { w: Math.max(Math.max(swLineW, 0), Math.max(esxLineW, 0) + vrtxNodesW, NODE_W), h: Math.max(totalH, NODE_H) };
 }
 
 function positionVirtualNodes(sl, startX, startY, positions) {
@@ -419,6 +425,7 @@ function buildTopology(devices, cables, hiddenCols = []) {
     orderContentH[ord] = heights.length > 0 ? Math.max(...heights) : NODE_H;
   });
 
+
   const orderY = {};
   let curY = 20;
   allOrders.forEach(ord => {
@@ -437,14 +444,6 @@ function buildTopology(devices, cables, hiddenCols = []) {
     const cX   = colX[col.key], cW = colW[col.key];
     const rows  = colRows[col.key] || [];
     if (!rows.length) return;
-
-    // Classifier les sublayers de cette colonne
-    const virtSLs = rows.flatMap(r => r.subLayers.filter(sl => sl.layer.virtualGroups != null));
-    // Les couches gridLayout sont dans normalRows (plus de zone-continue pour la grille)
-    const normalRows = rows.map(r => ({
-      ...r,
-      subLayers: r.subLayers.filter(sl => sl.layer.virtualGroups == null)
-    })).filter(r => r.subLayers.length > 0);
 
     // ── Nuage WAN (fond SVG) ──
     if (CONFIG.wanCloud?.enabled) {
@@ -472,49 +471,48 @@ function buildTopology(devices, cables, hiddenCols = []) {
       }
     }
 
-    // ── Zones virtuelles : une par sublayer (layer propre pour chaque classification) ──
-    virtSLs.forEach(sl => {
-      trackLayer(sl);
-      const ord = rows.find(r => r.subLayers.some(x => x === sl))?.order;
-      if (ord === undefined) return;
-      const y  = orderY[ord];
-      const zh = slH(sl) + ZPT + ZPB;
-      const w  = slW(sl);
-      const sx = cX + ZPS + (cW - ZPS*2 - w) / 2;
-      zoneRects.push({ layer:sl.layer, isVirtZone:true, isFullWidth:true, x:cX, y, w:cW, h:zh });
-      positionVirtualNodes(sl, sx, y + ZPT, positions);
-    });
-
-    // ── Couches normales + grille : positionnement par ligne ──
-    normalRows.forEach(row => {
-      const ord = row.order, y = orderY[ord];
+    // ── Toutes les couches : positionnement côte à côte par ligne (virtual et normales unifiées) ──
+    rows.forEach(row => {
+      const ord = row.order;
+      const y   = orderY[ord];
       const sorted = [...row.subLayers].sort((a,b) => {
         const pri = { distribution:0, access:1, forcepoint:0, fortinet:0, bgp:0, core:0, firewall:0, other:99 };
         return (pri[a.layer.key]??50) - (pri[b.layer.key]??50);
       });
       if (sorted.length === 1) {
-        const sl = sorted[0]; trackLayer(sl);
-        const w = slW(sl), sx = cX + ZPS + (cW - ZPS*2 - w) / 2;
+        const sl = sorted[0];
+        trackLayer(sl);
         const zh = slH(sl) + ZPT + ZPB;
-        if (sl.layer.gridLayout) {
+        const w  = slW(sl);
+        const sx = cX + ZPS + (cW - ZPS*2 - w) / 2;
+        if (sl.layer.virtualGroups != null) {
+          zoneRects.push({ layer:sl.layer, isVirtZone:true, isFullWidth:true, x:cX, y, w:cW, h:zh });
+          positionVirtualNodes(sl, sx, y + ZPT, positions);
+        } else if (sl.layer.gridLayout) {
           positionGridNodes(sl.nodes, sx, y+ZPT, positions, sl.layer.gridMaxPerRow || FWD_MAX);
+          zoneRects.push({ layer:sl.layer, isFullWidth:true, x:cX, y, w:cW, h:zh });
         } else {
           sl.nodes.forEach((d,ci,arr) => { positions[d.id] = { x: sx + arr.slice(0,ci).reduce((s,x)=>s+step(x),0), y: y+ZPT }; });
+          zoneRects.push({ layer:sl.layer, isFullWidth:true, x:cX, y, w:cW, h:zh });
         }
-        zoneRects.push({ layer:sl.layer, isFullWidth:true, x:cX, y, w:cW, h:zh });
       } else {
-        const tw = rowW(sorted);
-        let xc = cX + ZPS + (cW - ZPS*2 - tw) / 2;
+        // Plusieurs sublayers : côte à côte (virtual et normales traitées pareillement)
+        const tw    = rowW(sorted);
         const maxZh = Math.max(...sorted.map(sl => slH(sl))) + ZPT + ZPB;
+        let xc = cX + ZPS + (cW - ZPS*2 - tw) / 2;
         sorted.forEach(sl => {
           trackLayer(sl);
           const w = slW(sl), zh = slH(sl) + ZPT + ZPB;
-          if (sl.layer.gridLayout) {
+          if (sl.layer.virtualGroups != null) {
+            zoneRects.push({ layer:sl.layer, isVirtZone:true, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
+            positionVirtualNodes(sl, xc, y + ZPT, positions);
+          } else if (sl.layer.gridLayout) {
             positionGridNodes(sl.nodes, xc, y+ZPT, positions, sl.layer.gridMaxPerRow || FWD_MAX);
+            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
           } else {
             sl.nodes.forEach((d,ci,arr) => { positions[d.id] = { x: xc + arr.slice(0,ci).reduce((s,x)=>s+step(x),0), y: y+ZPT }; });
+            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
           }
-          zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
           xc += w + SUB_GAP;
         });
         zoneRects.push({ layer:null, isBackground:true, x:cX, y, w:cW, h:maxZh });
@@ -545,7 +543,7 @@ function drawVirtualSubgroups(parentG, splitData, positions, zoneColor, elFn, la
     if (nodePos.length === 0) return;
     const minX = Math.min(...nodePos.map(p=>p.x));
     const minY = Math.min(...nodePos.map(p=>p.y));
-    const maxX = Math.max(...nodePos.map(p=>p.x+NODE_W));
+    const maxX = Math.max(...nodes.filter(d=>positions[d.id]).map(d=>positions[d.id].x+_nw(d)));
     const maxY = Math.max(...nodePos.map(p=>p.y+NODE_H));
     const bx = minX - BUBBLE_PAD_X, by = minY - BUBBLE_PAD_Y;
     const bw = maxX - minX + BUBBLE_PAD_X*2, bh = maxY - minY + BUBBLE_PAD_Y*2;
