@@ -498,16 +498,22 @@ let _nodeWidths = {};
 function _nw(d) { return _nodeWidths[d.id] || NODE_W; }
 function _step(d) { return _nw(d) + COL_GAP; }
 
-// ── Retourne la couche d'un équipement ──
+// ── Retourne la couche d'un équipement (match le plus spécifique = slug le plus long) ──
 function getLayer(d) {
-  const slug = (d.role?.slug || d.device_role?.slug || '').toLowerCase();
-  const name = (d.role?.name || d.device_role?.name || '').toLowerCase();
+  const slug   = (d.role?.slug || d.device_role?.slug || '').toLowerCase();
+  const name   = (d.role?.name || d.device_role?.name || '').toLowerCase();
   const layers = getLayers();
-  for (const l of layers) {
-    if (l.key === 'other') continue;
-    if ((l.slugs || []).some(s => slug.includes(s) || name.includes(s))) return l;
-  }
-  return layers.find(l => l.key === 'other')
+  let bestLayer = null, bestLen = -1;
+  layers.forEach(l => {
+    if (l.key === 'other') return;
+    (l.slugs || []).forEach(s => {
+      if ((slug.includes(s) || name.includes(s)) && s.length > bestLen) {
+        bestLen = s.length; bestLayer = l;
+      }
+    });
+  });
+  return bestLayer
+    || layers.find(l => l.key === 'other')
     || { key: 'other', col: 'mid', order: 99, label: 'Other', color: '#485870', slugs: [] };
 }
 

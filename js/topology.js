@@ -25,7 +25,7 @@ function getSubLayerDims(sl) {
     return { w: Math.max(rowW, NODE_W), h: rows * NODE_H + Math.max(0, rows-1) * V_GAP };
   }
   const totalW = sl.nodes.reduce((s,d) => s + _step(d), 0) - COL_GAP;
-  return { w: totalW || 0, h: NODE_H };
+  return { w: Math.max(totalW, NODE_W), h: NODE_H };
 }
 
 // ── Configuration du layout virtuel (peut être porté par n'importe quelle couche) ──
@@ -377,10 +377,22 @@ function buildTopology(devices, cables, hiddenCols = []) {
     byCol[colKey][l.order][l.key].nodes.push(d);
   });
 
+  // Garantir que toutes les couches configurées au même ordre/col s'affichent côte à côte
+  getLayers().forEach(l => {
+    const colKey = validColKeys.has(l.col) ? l.col : null;
+    if (!colKey) return;
+    if (!byCol[colKey][l.order]) byCol[colKey][l.order] = {};
+    if (!byCol[colKey][l.order][l.key]) byCol[colKey][l.order][l.key] = { layer: l, nodes: [] };
+  });
+
   function toRows(colData) {
-    return Object.keys(colData).map(Number).sort((a,b)=>a-b)
-      .map(ord => ({ order:ord, subLayers: Object.values(colData[ord]).filter(sl => sl.nodes.length > 0) }))
-      .filter(r => r.subLayers.length > 0);
+    return Object.keys(colData).map(Number).sort((a,b) => a-b)
+      .map(ord => {
+        const allSLs = Object.values(colData[ord]);
+        if (!allSLs.some(sl => sl.nodes.length > 0)) return null; // tout vide → skip
+        return { order: ord, subLayers: allSLs };
+      })
+      .filter(r => r !== null);
   }
 
   function slW(sl) { return getSubLayerDims(sl).w; }
@@ -475,9 +487,10 @@ function buildTopology(devices, cables, hiddenCols = []) {
     rows.forEach(row => {
       const ord = row.order;
       const y   = orderY[ord];
+      const layerOrder = getLayers().map(l => l.key);
       const sorted = [...row.subLayers].sort((a,b) => {
-        const pri = { distribution:0, access:1, forcepoint:0, fortinet:0, bgp:0, core:0, firewall:0, other:99 };
-        return (pri[a.layer.key]??50) - (pri[b.layer.key]??50);
+        const ia = layerOrder.indexOf(a.layer.key), ib = layerOrder.indexOf(b.layer.key);
+        return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
       });
       if (sorted.length === 1) {
         const sl = sorted[0];
@@ -502,16 +515,17 @@ function buildTopology(devices, cables, hiddenCols = []) {
         let xc = cX + ZPS + (cW - ZPS*2 - tw) / 2;
         sorted.forEach(sl => {
           trackLayer(sl);
-          const w = slW(sl), zh = slH(sl) + ZPT + ZPB;
+          const w = slW(sl);
+          // maxZh uniformisé pour éviter la superposition visuelle entre zones de hauteurs différentes
           if (sl.layer.virtualGroups != null) {
-            zoneRects.push({ layer:sl.layer, isVirtZone:true, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
+            zoneRects.push({ layer:sl.layer, isVirtZone:true, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:maxZh });
             positionVirtualNodes(sl, xc, y + ZPT, positions);
           } else if (sl.layer.gridLayout) {
             positionGridNodes(sl.nodes, xc, y+ZPT, positions, sl.layer.gridMaxPerRow || FWD_MAX);
-            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
+            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:maxZh });
           } else {
             sl.nodes.forEach((d,ci,arr) => { positions[d.id] = { x: xc + arr.slice(0,ci).reduce((s,x)=>s+step(x),0), y: y+ZPT }; });
-            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:zh });
+            zoneRects.push({ layer:sl.layer, isSubZone:true, x:xc-ZPS/2, y, w:w+ZPS, h:maxZh });
           }
           xc += w + SUB_GAP;
         });
