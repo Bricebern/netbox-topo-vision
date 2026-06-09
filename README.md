@@ -277,7 +277,19 @@ See [docs/configuration.md](docs/configuration.md) for the complete reference.
 
 ---
 
-## 🔄 Mise à jour
+## 🔄 Updates
+
+### After modifying local JS/CSS/HTML files
+
+If you have edited source files (`js/`, `css/`, `index.html`) and want to see those changes in production mode:
+
+```bash
+docker compose down && docker compose up -d --build
+```
+
+> `--build` rebuilds the image from your local sources and bundles your changes into it.  
+> Without `--build`, Docker reuses the existing image and your edits are ignored.  
+> In development mode (`docker-compose.dev.yml`), files are bind-mounted directly — `--build` is not needed.
 
 ### Via Docker Compose (Option A)
 
@@ -298,18 +310,18 @@ docker run -d -p 8090:80 \
   briceber/netbox-topo-vision:latest
 ```
 
-> Le fichier `default-topo.json` et le `.env` ne sont pas inclus dans l'image Docker — aucune configuration n'est perdue lors d'une mise à jour.
+> `default-topo.json` and `.env` are not included in the Docker image — no configuration is lost during an update.
 
-### Mettre à jour les sources depuis GitHub
+### Pull latest source from GitHub
 
-Si vous avez cloné le dépôt et souhaitez récupérer la dernière version du code source :
+If you cloned the repository and want to fetch the latest upstream changes:
 
 ```bash
-git pull origin main          # récupère les derniers commits
-docker compose up -d --build  # reconstruit l'image avec les nouveaux fichiers
+git pull origin main          # fetch latest commits
+docker compose up -d --build  # rebuild the image with the updated files
 ```
 
-> Vos fichiers `default-topo.json` et `.env` sont dans votre répertoire de travail et ne sont pas touchés par `git pull`.
+> Your `default-topo.json` and `.env` files live in your working directory and are not affected by `git pull`.
 
 ---
 

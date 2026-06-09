@@ -20,10 +20,9 @@
 
 services:
   topo-vision:
-    # Pre-built image from Docker Hub (recommended for production)
-    # To build locally instead, comment the line below and uncomment "build: ."
+    # Build depuis les sources locales pour embarquer les modifications JS/CSS
     image: briceber/netbox-topo-vision:latest
-    # build: .
+    build: .
     container_name: topo-vision
     restart: unless-stopped
     ports:
