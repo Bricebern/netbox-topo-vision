@@ -33,7 +33,7 @@ git clone https://github.com/YOUR_USERNAME/netbox-topo-vision.git
 cd netbox-topo-vision
 
 # 3. Add the upstream remote to stay in sync
-git remote add upstream https://github.com/Brice97426/netbox-topo-vision.git
+git remote add upstream https://github.com/Bricebern/netbox-topo-vision.git
 ```
 
 ---
