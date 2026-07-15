@@ -342,3 +342,4 @@ git push origin feat/my-feature
 
 MIT © [Bricebern](https://github.com/Bricebern)
 See [LICENSE](LICENSE) for details.
+---
