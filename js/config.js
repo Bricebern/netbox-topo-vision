@@ -159,6 +159,7 @@ const I18N = {
     'zones.left': 'Left column',
     'zones.mid': 'Middle column',
     'zones.right': 'Right column',
+    'zones.line': 'Line',
     'zone.key': 'Key (ID)',
     'zone.label': 'Label',
     'zone.color': 'Color',
@@ -185,8 +186,38 @@ const I18N = {
     'sidebar.subnets': 'Site subnets',
     'sidebar.loading': 'Loading…',
     'sidebar.noSubnet': 'No prefix',
+    'sidebar.wan': 'WAN zone',
     'sidebar.cable': 'Cable',
-    'sidebar.wan': 'WAN zone'
+    'sidebar.cables': 'Cables',
+    'sidebar.cable_number': 'Cable #',
+    'sidebar.remote_side_wan': 'Remote Side — WAN',
+    'sidebar.link': 'Link',
+    'sidebar.wan_connections': 'Connections Traversing the WAN',
+    'sidebar.no_wan_connections': 'No WAN Connections Detected',
+    'sidebar.site_group': 'Site Group',
+    'sidebar.location': 'Location',
+    'sidebar.rack_u': 'Rack / U',
+    'sidebar.manufacturer': 'Manufacturer',
+    'sidebar.primary_ip': 'Primary IP',
+    'sidebar.general': 'General',
+    'sidebar.status': 'Status',
+    'sidebar.role': 'Role',
+    'sidebar.site': 'Site',
+    'sidebar.model': 'Model',
+    'sidebar.serial_number': 'Serial Number',
+    'sidebar.comments': 'Comments',
+    'sidebar.interfaces': 'Interfaces',
+    'sidebar.description': 'Description',
+    'sidebar.label': 'Label',
+    'sidebar.color': 'Color',
+    'sidebar.type': 'Type',
+    'sidebar.netbox_id': 'NetBox ID',
+    'status.fetching_data': 'Retrieving Data...',
+    'status.devices_abbr': 'dev.',
+    'status.error': 'Error',
+    'status.devices': 'Devices',
+    'status.cables': 'Cables',
+    'status.layers': 'Layers'
   },
   fr: {
     'boot.configurePrompt': 'Configurez votre connexion NetBox dans les Param\u00e8tres.',
@@ -293,6 +324,7 @@ const I18N = {
     'zones.left': 'Colonne gauche',
     'zones.mid': 'Colonne centrale',
     'zones.right': 'Colonne droite',
+    'zones.line': 'Ligne',
     'zone.key': 'Cl\u00e9 (ID)',
     'zone.label': 'Libell\u00e9',
     'zone.color': 'Couleur',
@@ -316,11 +348,41 @@ const I18N = {
     'toast.invalidJSON': 'Fichier JSON invalide',
     'toast.favSaved': '\u2713 Favori enregistr\u00e9',
     'sidebar.device': '\u00c9quipement',
-    'sidebar.cable': 'C\u00e2ble',
     'sidebar.wan': 'Zone WAN',
+    'sidebar.cable': 'C\u00e2ble',
+    'sidebar.cables': 'C\u00e2bles',
+    'sidebar.cable_number': 'C\u002eble #',
+    'sidebar.remote_side_wan': 'C\u00f4t\u00e9 distant \u2014 r\u00e9seau \u00e9tendu',
+    'sidebar.link': 'liaison',
+    'sidebar.wan_connections': 'Connexions traversant le WAN',
+    'sidebar.no_wan_connections': 'Aucune connexion WAN d\u00e9tect\u00e9e',
     'sidebar.subnets': 'Sous-r\u00e9seaux du site',
     'sidebar.loading': 'Chargement\u2026',
-    'sidebar.noSubnet': 'Aucun pr\u00e9fixe'
+    'sidebar.noSubnet': 'Aucun pr\u00e9fixe',
+    'sidebar.site_group': 'Groupe de site',
+    'sidebar.location': 'Emplacement',
+    'sidebar.rack_u': 'Baie / U',
+    'sidebar.manufacturer': 'Fabricant',
+    'sidebar.primary_ip': 'IP primaire',
+    'sidebar.general': 'G\u00e9n\u00e9ral',
+    'sidebar.status': 'Statut',
+    'sidebar.role': 'R\u00f4le',
+    'sidebar.site': 'Site',
+    'sidebar.model': 'Mod\u00e8le',
+    'sidebar.serial_number': 'N\u00b0 s\u00e9rie',
+    'sidebar.comments': 'Commentaires',
+    'sidebar.interfaces': 'Interfaces',
+    'sidebar.description': 'Description',
+    'sidebar.label': 'Label',
+    'sidebar.color': 'Couleur',
+    'sidebar.type': 'Type',
+    'sidebar.netbox_id': 'ID NetBox',
+    'status.fetching_data': 'R\u00e9cup\u00e9ration des donn\u00e9es\u2026',
+    'status.devices_abbr': '\u00e9quip.',
+    'status.error': 'Erreur',
+    'status.devices': '\u00e9quipements',
+    'status.cables': 'c\u00e2bles',
+    'status.layers': 'couches'
   }
 };
 let _lang = 'en';
@@ -885,7 +947,7 @@ function renderZoneEditor() {
   const addRowHead = document.createElement('div');
   addRowHead.className = 'zed-row-head';
   const addRowBtn = document.createElement('button');
-  addRowBtn.className = 'btn tiny'; addRowBtn.textContent = '+ Ligne';
+  addRowBtn.className = 'btn tiny'; addRowBtn.textContent = '+ ' + t('zones.line');
   addRowBtn.onclick = addRow;
   addRowHead.appendChild(addRowBtn);
   grid.appendChild(addRowHead);

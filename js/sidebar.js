@@ -21,12 +21,13 @@ function showWANDetail(wanEdges, devices) {
     return { sdwan, fwd, cables: e.cables };
   }).sort((a,b) => (a.fwd?.name||'').localeCompare(b.fwd?.name||''));
 
+
   const rowsHtml = rows.map(r => {
     const cablesHtml = r.cables.map(c => {
       const clr = getCableColor(c.color);
       return `<div class="cable-row">
         <div class="cable-dot" style="background:${clr}"></div>
-        <div class="cable-lbl">${c.label||c.type_display||c.type||'Câble #'+c.id}</div>
+        <div class="cable-lbl">${c.label || c.type_display || c.type || `${t('sidebar.cable_number')} ${c.id}`}</div>
         <div class="cable-to" style="color:var(--text3);font-size:9px">${c.status||''}</div>
       </div>`;
     }).join('');
@@ -38,7 +39,7 @@ function showWANDetail(wanEdges, devices) {
             <div style="font-size:11px;font-weight:600;color:var(--text)">${r.fwd?.name||'?'}</div>
             <div style="font-family:var(--mono);font-size:8.5px;color:var(--text3)">via ${r.sdwan?.name||'?'}</div>
           </div>
-          <div style="margin-left:auto;font-family:var(--mono);font-size:8.5px;color:#20d0e8;opacity:.7">${r.cables.length} câble${r.cables.length>1?'s':''}</div>
+          <div style="margin-left:auto;font-family:var(--mono);font-size:8.5px;color:#20d0e8;opacity:.7">${r.cables.length} ${t('sidebar.cable')}${r.cables.length>1?'s':''}</div>
         </div>
         <div class="cables-scroll" style="max-height:80px">${cablesHtml}</div>
       </div>`;
@@ -49,13 +50,13 @@ function showWANDetail(wanEdges, devices) {
     <div class="dev-name" style="display:flex;align-items:center;gap:8px">
       <span style="color:#20d0e8;font-size:18px">☁</span> WAN
     </div>
-    <div class="dev-model">Côté distant — réseau étendu</div>
+    <div class="dev-model">${t('sidebar.remote_side_wan')}</div>
     <div class="dev-layer-badge" style="background:rgba(32,208,232,0.08);color:#20d0e8;border:1px solid rgba(32,208,232,0.22);">
-      ◈&nbsp;${wanEdges.length} liaison${wanEdges.length>1?'s':''} · ${totalCables} câble${totalCables>1?'s':''}
+      ◈&nbsp;${wanEdges.length} ${t('sidebar.link')}${wanEdges.length>1?'s':''} · ${totalCables} ${t('sidebar.cable')}${totalCables>1?'s':''}
     </div>
     <div class="info-block">
-      <div class="info-head">Connexions traversant le WAN</div>
-      ${rowsHtml || '<div style="font-size:10.5px;color:var(--text3);padding:8px 0">Aucune connexion WAN détectée</div>'}
+      <div class="info-head">${t('sidebar.wan_connections')}</div>
+      ${rowsHtml || '<div style="font-size:10.5px;color:var(--text3);padding:8px 0">' + t('sidebar.no_wan_connections') + '</div>'}
     </div>
   `;
   openSidebar();
@@ -85,22 +86,22 @@ async function showDeviceDetail(d) {
       ◈&nbsp;${layer.label}
     </div>
     <div class="info-block">
-      <div class="info-head">Général</div>
-      <div class="info-row"><span class="info-k">Statut</span><span class="info-v"><span class="badge ${getStatusBadge(d.status)}">${d.status?.label||'—'}</span></span></div>
-      <div class="info-row"><span class="info-k">Rôle</span><span class="info-v">${d.role?.name||d.device_role?.name||'—'}</span></div>
-      <div class="info-row"><span class="info-k">Site</span><span class="info-v">${d.site?.name||'—'}</span></div>
-      <div class="info-row"><span class="info-k">Groupe de site</span><span class="info-v">${ancestors.length > 0 ? ancestors.join(' › ') : (siteGroupMap[d.site?.id]||'—')}</span></div>
-      <div class="info-row"><span class="info-k">Emplacement</span><span class="info-v">${d.location?.name||'—'}</span></div>
-      <div class="info-row"><span class="info-k">Baie / U</span><span class="info-v">${d.rack?.name||'—'}${d.position!=null?' · U'+d.position:''}</span></div>
-      <div class="info-row"><span class="info-k">Fabricant</span><span class="info-v">${d.device_type?.manufacturer?.name||'—'}</span></div>
-      <div class="info-row"><span class="info-k">Modèle</span><span class="info-v">${d.device_type?.model||'—'}</span></div>
-      <div class="info-row"><span class="info-k">N° série</span><span class="info-v">${d.serial||'—'}</span></div>
-      <div class="info-row"><span class="info-k">IP primaire</span><span class="info-v">${d.primary_ip?.address||d.primary_ip4?.address||'—'}</span></div>
+      <div class="info-head">${t('sidebar.general')}</div>
+      <div class="info-row"><span class="info-k">${t('sidebar.status')}</span><span class="info-v"><span class="badge ${getStatusBadge(d.status)}">${d.status?.label||'—'}</span></span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.role')}</span><span class="info-v">${d.role?.name||d.device_role?.name||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.site')}</span><span class="info-v">${d.site?.name||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.site_group')}</span><span class="info-v">${ancestors.length > 0 ? ancestors.join(' › ') : (siteGroupMap[d.site?.id]||'—')}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.location')}</span><span class="info-v">${d.location?.name||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.rack_u')}</span><span class="info-v">${d.rack?.name||'—'}${d.position!=null?' · U'+d.position:''}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.manufacturer')}</span> <span class="info-v">${d.device_type?.manufacturer?.name||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.model')}</span><span class="info-v">${d.device_type?.model||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.serial_number')}</span><span class="info-v">${d.serial||'—'}</span></div>
+      <div class="info-row"><span class="info-k">${t('sidebar.primary_ip')}</span><span class="info-v">${d.primary_ip?.address||d.primary_ip4?.address||'—'}</span></div>
     </div>
-    ${cables.length>0 ? `<div class="info-block"><div class="info-head">Câbles (${cables.length})</div><div class="cables-scroll">${
-      cables.map(c=>`<div class="cable-row"><div class="cable-dot" style="background:${getCableColor(c.color)}"></div><div class="cable-lbl">${c.label||c.type||'Câble #'+c.id}</div><div class="cable-to">→ ${c.otherDevice}</div></div>`).join('')
+    ${cables.length>0 ? `<div class="info-block"><div class="info-head">${t('sidebar.cables')} (${cables.length})</div><div class="cables-scroll">${
+      cables.map(c=>`<div class="cable-row"><div class="cable-dot" style="background:${getCableColor(c.color)}"></div><div class="cable-lbl">${c.label||c.type||`${t('sidebar.cable_number')} ${c.id}`}</div><div class="cable-to">→ ${c.otherDevice}</div></div>`).join('')
     }</div></div>` : ''}
-    ${d.comments ? `<div class="info-block"><div class="info-head">Commentaires</div><div style="font-size:10.5px;color:var(--text2);line-height:1.7">${d.comments}</div></div>` : ''}
+    ${d.comments ? `<div class="info-block"><div class="info-head">${t('sidebar.comments')}</div><div style="font-size:10.5px;color:var(--text2);line-height:1.7">${d.comments}</div></div>` : ''}
     ${d.site?.slug ? `<div class="info-block"><div class="info-head">${t('sidebar.subnets')}</div><div id="sidebar-subnets"><span class="info-v" style="opacity:.5">${t('sidebar.loading')}</span></div></div>` : ''}
   `;
   openSidebar();
@@ -134,21 +135,21 @@ function showEdgeDetail(edge, devices) {
   const dB = devices.find(d => d.id === edge.bId);
   const cards = edge.cables.map((c,i) => {
     const clr    = getCableColor(c.color);
-    const ifRow  = (c.ifA||c.ifB) ? `<div class="info-row"><span class="info-k">Interfaces</span><span class="info-v" style="font-size:9.5px">${c.ifA||'—'} ↔ ${c.ifB||'—'}</span></div>` : '';
-    const descRow = c.description ? `<div class="info-row"><span class="info-k">Description</span><span class="info-v" style="font-size:9.5px">${c.description}</span></div>` : '';
+    const ifRow  = (c.ifA||c.ifB) ? `<div class="info-row"><span class="info-k">${t('sidebar.interfaces')}</span><span class="info-v" style="font-size:9.5px">${c.ifA||'—'} ↔ ${c.ifB||'—'}</span></div>` : '';
+    const descRow = c.description ? `<div class="info-row"><span class="info-k">${t('sidebar.description')}</span><span class="info-v" style="font-size:9.5px">${c.description}</span></div>` : '';
     return `<div class="cable-card ${i===0?'open':''}" id="cc-${i}">
       <div class="cable-card-head" onclick="toggleCC(${i})">
         <div class="cable-card-dot" style="background:${clr}"></div>
-        <span class="cable-card-title">${c.label||'Câble '+(i+1)}</span>
+	<span class="cable-card-title">${c.label||`${t('sidebar.cable')} ${(i+1)}`}</span>
         <span class="cable-card-chev">▾</span>
       </div>
       <div class="cable-card-body">
-        <div class="info-row"><span class="info-k">Label</span><span class="info-v">${c.label||'—'}</span></div>
-        <div class="info-row"><span class="info-k">Couleur</span><span class="info-v" style="display:flex;align-items:center;gap:5px;justify-content:flex-end"><span style="width:9px;height:9px;border-radius:50%;background:${clr};display:inline-block;flex-shrink:0"></span>${c.color||'—'}</span></div>
-        <div class="info-row"><span class="info-k">Type</span><span class="info-v">${c.type_display||c.type||'—'}</span></div>
-        <div class="info-row"><span class="info-k">Statut</span><span class="info-v">${c.status||'—'}</span></div>
+        <div class="info-row"><span class="info-k">${t('sidebar.label')}</span><span class="info-v">${c.label||'—'}</span></div>
+        <div class="info-row"><span class="info-k">${t('sidebar.color')}</span><span class="info-v" style="display:flex;align-items:center;gap:5px;justify-content:flex-end"><span style="width:9px;height:9px;border-radius:50%;background:${clr};display:inline-block;flex-shrink:0"></span>${c.color||'—'}</span></div>
+        <div class="info-row"><span class="info-k">${t('sidebar.type')}</span><span class="info-v">${c.type_display||c.type||'—'}</span></div>
+        <div class="info-row"><span class="info-k">${t('sidebar.status')}</span><span class="info-v">${c.status||'—'}</span></div>
         ${ifRow}${descRow}
-        <div class="info-row"><span class="info-k">ID NetBox</span><span class="info-v">#${c.id}</span></div>
+        <div class="info-row"><span class="info-k">${t('sidebar.netbox_id')}</span><span class="info-v">#${c.id}</span></div>
       </div>
     </div>`;
   }).join('');
@@ -156,7 +157,7 @@ function showEdgeDetail(edge, devices) {
   document.getElementById('sidebar-kind').textContent = t('sidebar.cable');
   document.getElementById('sidebar-content').innerHTML = `
     <div class="dev-name" style="font-size:13px">${dA?.name||'?'} ↔ ${dB?.name||'?'}</div>
-    <div class="dev-model">${edge.cables.length} câble${edge.cables.length>1?'s':''}</div>
+    <div class="dev-model">${edge.cables.length} ${t('sidebar.cable')}${edge.cables.length>1?'s':''}</div>
     <div class="cables-scroll" style="max-height:calc(100vh - 180px)">${cards}</div>
   `;
   openSidebar();

@@ -6,6 +6,14 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## Unreleased - 2026-07-24
+
+### Fixed
+- **fix/Extra-I18n.en** - Fixed issues where multiple messages where hardcoded in French.
+  Changed to use i18n tranlation function and added both English and French translations.
+
+---
+
 ## [2.0.0] — 2025-07-14
 
 ### Added
