@@ -59,7 +59,7 @@ async function loadTopology() {
   btn.disabled = true;
   dot.className  = 'status-dot loading';
   stxt.textContent = t('status.connecting');
-  empty.innerHTML  = `<div class="loader-ring"></div><div class="empty-text">Récupération des données…</div>`;
+  empty.innerHTML  = `<div class="loader-ring"></div><div class="empty-text">${t('status.fetching_data')}</div>`;
   empty.style.display = 'flex';
   document.getElementById('topbar-stats').style.display   = 'none';
   document.getElementById('canvas-stats').style.display   = 'none';
@@ -111,7 +111,7 @@ async function loadTopology() {
       : devices;
 
     dot.className    = 'status-dot ok';
-    stxt.textContent = `${visDevices.length} équip.`;
+    stxt.textContent = `${visDevices.length} ` + t('status.devices_abbr');
     topoData         = buildTopology(visDevices, cables);
     currentTopoData  = topoData;
     render(topoData);
@@ -121,7 +121,7 @@ async function loadTopology() {
     resetView();
   } catch(e) {
     dot.className    = 'status-dot err';
-    stxt.textContent = 'Erreur';
+    stxt.textContent = t('status.error');
     empty.innerHTML  = `<div class="empty-glyph">✕</div><div class="empty-text">${e.message}<br><small style="opacity:.4">${t('boot.checkConfig')}</small></div>`;
     showToast(e.message, 'err');
   } finally { btn.disabled = false; }
@@ -135,9 +135,9 @@ function updateStats(devs, cables, levels) {
   document.getElementById('topbar-stats').style.display = 'flex';
   const cs = document.getElementById('canvas-stats');
   cs.innerHTML = `
-    <div class="canvas-stat"><strong>${devs}</strong>&nbsp;équipements</div>
-    <div class="canvas-stat"><strong>${cables}</strong>&nbsp;câbles</div>
-    <div class="canvas-stat"><strong>${levels}</strong>&nbsp;couches</div>`;
+    <div class="canvas-stat"><strong>${devs}</strong>&nbsp;${t('status.devices')}</div>
+    <div class="canvas-stat"><strong>${cables}</strong>&nbsp;${t('status.cables')}</div>
+    <div class="canvas-stat"><strong>${levels}</strong>&nbsp;${t('status.layers')}</div>`;
   cs.style.display = 'flex';
 }
 
