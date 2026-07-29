@@ -90,18 +90,27 @@
   <select class="filter-select" id="filter-site" onchange="applyFilters()">
     <option value="" data-i18n="filter.allSites">All sites</option>
   </select>
+  <select class="filter-select" id="filter-site-status" onchange="applyFilters()">
+    <option value="" data-i18n="filter.allSiteStatuses">All site statuses</option>
+    <option value="active"           data-i18n="status.active">Active</option>
+    <option value="planned"          data-i18n="status.planned">Planned</option>
+    <option value="staging"          data-i18n="status.staging">Staging</option>
+    <option value="decommissioning"  data-i18n="status.decommissioning">Decommissioning</option>
+    <option value="retired"          data-i18n="status.retired">Retired</option>
+  </select>
   <div class="filter-divider"></div>
   <select class="filter-select" id="filter-site-group" onchange="applyFilters()">
     <option value="" data-i18n="filter.allGroups">All site groups</option>
   </select>
   <div class="filter-divider"></div>
-  <select class="filter-select" id="filter-status" onchange="applyFilters()">
-    <option value="" data-i18n="filter.allStatuses">All statuses</option>
+  <select class="filter-select" id="filter-device-status" onchange="applyFilters()">
+    <option value="" data-i18n="filter.allDeviceStatuses">All device statuses</option>
     <option value="active"           data-i18n="status.active">Active</option>
     <option value="planned"          data-i18n="status.planned">Planned</option>
     <option value="staged"           data-i18n="status.staged">Staged</option>
     <option value="failed"           data-i18n="status.failed">Failed</option>
     <option value="offline"          data-i18n="status.offline">Offline</option>
+    <option value="inventory"        data-i18n="status.inventory">Inventory</option>
     <option value="decommissioning"  data-i18n="status.decommissioning">Decommissioning</option>
   </select>
   <div class="filter-divider"></div>

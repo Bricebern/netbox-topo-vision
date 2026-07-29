@@ -6,7 +6,7 @@
 // ══════════════════════════════════════════
 
 let activeFilters = {
-  role: '', site: '', status: '', siteGroup: '',
+  role: '', site: '', siteStatus: '', siteGroup: '', deviceStatus: '',
   tag: '', manufacturer: '', layerKeys: [], hiddenCols: [], prefixFilter: ''
 };
 let _prefixMatchedIds = null;
@@ -91,8 +91,9 @@ function populateFilters(devices) {
 function applyFilters() {
   activeFilters.role         = document.getElementById('filter-role').value;
   activeFilters.site         = document.getElementById('filter-site').value;
-  activeFilters.status       = document.getElementById('filter-status').value;
+  activeFilters.siteStatus   = document.getElementById('filter-site-status').value;
   activeFilters.siteGroup    = document.getElementById('filter-site-group').value;
+  activeFilters.deviceStatus = document.getElementById('filter-device-status').value;
   activeFilters.tag          = document.getElementById('filter-tag')?.value || '';
   activeFilters.manufacturer = document.getElementById('filter-manufacturer')?.value || '';
   // layerKeys est défini programmatiquement par les favoris (pas de contrôle UI direct)
@@ -100,7 +101,7 @@ function applyFilters() {
   const has = Object.values(activeFilters).some(v => Array.isArray(v) ? v.length : !!v);
 
   // Indicateur visuel sur les selects actifs
-  ['filter-role','filter-site','filter-status','filter-site-group','filter-tag','filter-manufacturer'].forEach(id => {
+  ['filter-role','filter-site','filter-site-status','filter-site-group','filter-device-status','filter-tag','filter-manufacturer'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.classList.toggle('on', !!el.value);
   });
@@ -111,8 +112,9 @@ function applyFilters() {
   tags.innerHTML = '';
   if (activeFilters.role)         tags.innerHTML += makeTag(t('filter.role'),         activeFilters.role,         () => { document.getElementById('filter-role').value=''; applyFilters(); });
   if (activeFilters.site)         tags.innerHTML += makeTag(t('filter.site'),         activeFilters.site,         () => { document.getElementById('filter-site').value=''; applyFilters(); });
+  if (activeFilters.siteStatus)   tags.innerHTML += makeTag(t('filter.siteStatus'),   activeFilters.siteStatus,   () => { document.getElementById('filter-site-status').value=''; applyFilters(); });
   if (activeFilters.siteGroup)    tags.innerHTML += makeTag(t('filter.group'),        activeFilters.siteGroup,    () => { document.getElementById('filter-site-group').value=''; applyFilters(); });
-  if (activeFilters.status)       tags.innerHTML += makeTag(t('filter.status'),       activeFilters.status,       () => { document.getElementById('filter-status').value=''; applyFilters(); });
+  if (activeFilters.deviceStatus) tags.innerHTML += makeTag(t('filter.deviceStatus'), activeFilters.deviceStatus, () => { document.getElementById('filter-device-status').value=''; applyFilters(); });
   if (activeFilters.tag)          tags.innerHTML += makeTag(t('filter.tag'),          activeFilters.tag,          () => { document.getElementById('filter-tag').value=''; applyFilters(); });
   if (activeFilters.manufacturer) tags.innerHTML += makeTag(t('filter.manufacturer'), activeFilters.manufacturer, () => { document.getElementById('filter-manufacturer').value=''; applyFilters(); });
   if (activeFilters.layerKeys && activeFilters.layerKeys.length) {
@@ -141,7 +143,8 @@ function applyFilters() {
   const visible = topoData.devices.filter(d => {
     const roleMatch   = !activeFilters.role    || (d.role?.name||d.device_role?.name||'') === activeFilters.role;
     const siteMatch   = !activeFilters.site    || (d.site?.name||'') === activeFilters.site;
-    const statusMatch = !activeFilters.status  || (d.status?.value||'') === activeFilters.status;
+    const siteStatusMatch = !activeFilters.siteStatus  || d.siteStatus === activeFilters.siteStatus;
+    const deviceStatusMatch = !activeFilters.deviceStatus  || (d.status?.value||'') === activeFilters.deviceStatus;
     let groupMatch = true;
     if (activeFilters.siteGroup) {
       const ancestors = deviceSiteGroupsMap[d.site?.id] || [];
@@ -153,7 +156,7 @@ function applyFilters() {
     if (Array.isArray(activeFilters.layerKeys) && activeFilters.layerKeys.length) {
       layerMatch = activeFilters.layerKeys.includes(getLayer(d).key);
     }
-    return roleMatch && siteMatch && statusMatch && groupMatch && tagMatch && mfMatch && layerMatch;
+    return roleMatch && siteMatch && siteStatusMatch && groupMatch && deviceStatusMatch && tagMatch && mfMatch && layerMatch;
   });
 
   const prefixVisible = _prefixMatchedIds !== null ? visible.filter(d => _prefixMatchedIds.has(d.id)) : visible;
@@ -172,7 +175,7 @@ function makeTag(key, val, onClose) {
 
 // ── Réinitialise tous les filtres ──
 function clearFilters() {
-  ['filter-role','filter-site','filter-site-group','filter-status','filter-tag','filter-manufacturer'].forEach(id => {
+  ['filter-role','filter-site','filter-site-status','filter-site-group','filter-device-status','filter-tag','filter-manufacturer'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   activeFilters.layerKeys = [];
@@ -217,8 +220,9 @@ function confirmSaveFavorite() {
     filters: {
       role:         activeFilters.role,
       site:         activeFilters.site,
+      siteStatus:   activeFilters.siteStatus,
       siteGroup:    activeFilters.siteGroup,
-      status:       activeFilters.status,
+      deviceStatus: activeFilters.deviceStatus,
       tag:          activeFilters.tag,
       manufacturer: activeFilters.manufacturer,
       layerKeys
@@ -248,12 +252,13 @@ function applyFavorite(i) {
   const fav = getFavorites()[i]; if (!fav) return;
   const f   = fav.filters || {};
   const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
-  setVal('filter-role',         f.role);
-  setVal('filter-site',         f.site);
-  setVal('filter-site-group',   f.siteGroup);
-  setVal('filter-status',       f.status);
-  setVal('filter-tag',          f.tag);
-  setVal('filter-manufacturer', f.manufacturer);
+  setVal('filter-role',          f.role);
+  setVal('filter-site',          f.site);
+  setVal('filter-site-status',   f.siteStatus);
+  setVal('filter-site-group',    f.siteGroup);
+  setVal('filter-device-status', f.deviceStatus);
+  setVal('filter-tag',           f.tag);
+  setVal('filter-manufacturer',  f.manufacturer);
   activeFilters.layerKeys = Array.isArray(f.layerKeys) ? f.layerKeys : [];
   document.querySelectorAll('.fav-pill').forEach((el, idx) => el.classList.toggle('on', idx === i));
   applyFilters();
