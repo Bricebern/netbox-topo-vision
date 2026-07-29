@@ -91,18 +91,25 @@ async function loadTopology() {
     }
 
     siteGroupMap = {}; deviceSiteGroupsMap = {};
+
+    const siteById = Object.fromEntries(
+      sites.map(s => [s.id, s])
+    );
+
     sites.forEach(s => {
       const sgId   = s.group?.id || s.site_group?.id;
       const sgName = s.group?.name || s.site_group?.name;
       if (sgName) siteGroupMap[s.id] = sgName;
       if (sgId)   deviceSiteGroupsMap[s.id] = sgAncestors(sgId);
     });
+	  
     devices.forEach(d => {
       const sid  = d.site?.id;
       const sgId = d.site?.group?.id || d.site?.site_group?.id;
       const sgNm = d.site?.group?.name || d.site?.site_group?.name;
       if (sid && sgNm && !siteGroupMap[sid])           siteGroupMap[sid] = sgNm;
       if (sid && sgId && !deviceSiteGroupsMap[sid])    deviceSiteGroupsMap[sid] = sgAncestors(sgId);
+      d.siteStatus = siteById[sid]?.status?.value || '';
     });
 
     const blacklistedRoles = new Set((CONFIG.roleBlacklist||[]).map(s=>s.toLowerCase()));

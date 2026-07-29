@@ -6,6 +6,18 @@ and [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## Unreleased - 2026-07-29
+
+### Added
+- **feat/SiteStatus-Filter** - Added Site Status filter to allow for filtering on the site status.
+  Added "Site statuses" filter and filter name items in i18n
+
+### Changed
+- Changed '*.status' to '*.deviceStatus' to allow for adding 'siteStatus' in all code.
+  Renamed text "All statuses" to "Device statuses"
+
+---
+
 ## Unreleased - 2026-07-24
 
 ### Fixed
